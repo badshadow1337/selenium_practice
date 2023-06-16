@@ -2,8 +2,11 @@ import os.path
 import time
 import re
 
+import pytest
 from selenium import webdriver
 from selenium.webdriver import ActionChains, Keys
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -239,7 +242,6 @@ class Test:
         driver.find_element(By.XPATH, '//*[@id="modal"]/div[2]/div[3]/p').click()
 
     # def test_app16_exit_intent(self):
-    #     driver.get('https://the-internet.herokuapp.com/exit_intent')
 
     def test_app17_download(self):
         driver.get('https://the-internet.herokuapp.com/download')
@@ -279,9 +281,120 @@ class Test:
 
     def test_app20_forgot_password(self):
         driver.get('https://the-internet.herokuapp.com/forgot_password')
-        driver.find_element(By.ID,'email').send_keys('zxc@gmail.com')
-        driver.find_element(By.ID,'form_submit').click()
-        res = driver.find_element(By.TAG_NAME,'h1')
+        driver.find_element(By.ID, 'email').send_keys('zxc@gmail.com')
+        driver.find_element(By.ID, 'form_submit').click()
+        res = driver.find_element(By.TAG_NAME, 'h1')
         assert res.text == 'Internal Server Error'
+
+    def test_app21_login(self):
+        driver.get('https://the-internet.herokuapp.com/login')
+        driver.find_element(By.ID, 'username').send_keys('tomsmith')
+        driver.find_element(By.ID, 'password').send_keys('SuperSecretPassword!')
+        driver.find_element(By.XPATH, '//*[@id="login"]/button').click()
+        finish_text = driver.find_element(By.CLASS_NAME, 'subheader').text
+        assert finish_text == 'Welcome to the Secure Area. When you are done click logout below.'
+
+    def test_app22_frames(self):
+        driver.get('https://the-internet.herokuapp.com/frames')
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/ul/li[2]/a').click()
+        text_area_size = int(driver.find_element(By.XPATH, '//*[@id="content"]/div/div').size['height'])
+        assert text_area_size == 200
+        ActionChains(driver).drag_and_drop_by_offset(
+            driver.find_element(By.XPATH, '//*[@id="content"]/div/div/div[2]/div[2]'), 0, 20).perform()
+        text_area_size = int(driver.find_element(By.XPATH, '//*[@id="content"]/div/div').size['height'])
+        assert text_area_size == 218
+
+    # def test_app23_geolocation(self):
+
+    def test_app24_horizontal_slider(self):
+        driver.get('https://the-internet.herokuapp.com/horizontal_slider')
+        slider = driver.find_element(By.TAG_NAME, 'input')
+        for i in range(0, 4):
+            slider.send_keys(Keys.ARROW_RIGHT)
+        assert driver.find_element(By.ID, 'range').text == '2'
+
+    def test_app25_hovers(self):
+        driver.get('https://the-internet.herokuapp.com/hovers')
+
+        img1 = driver.find_element(By.XPATH, '//*[@id="content"]/div/div[1]/img')
+        ActionChains(driver).move_to_element(img1).perform()
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/div[1]/div/a').click()
+        time.sleep(1)
+        assert driver.current_url == 'https://the-internet.herokuapp.com/users/1'
+        driver.back()
+
+        img2 = driver.find_element(By.XPATH, '//*[@id="content"]/div/div[2]/img')
+        ActionChains(driver).move_to_element(img2).perform()
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/div[2]/div/a').click()
+        time.sleep(1)
+        assert driver.current_url == 'https://the-internet.herokuapp.com/users/2'
+        driver.back()
+
+        img3 = driver.find_element(By.XPATH, '//*[@id="content"]/div/div[3]/img')
+        ActionChains(driver).move_to_element(img3).perform()
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/div[3]/div/a').click()
+        time.sleep(1)
+        assert driver.current_url == 'https://the-internet.herokuapp.com/users/3'
+
+    # def test_app26_infinite_scroll(self):
+
+    def test_apps27_inputs(self):
+        driver.get('https://the-internet.herokuapp.com/inputs')
+        inp = driver.find_element(By.XPATH, '//*[@id="content"]/div/div/div/input')
+        inp.send_keys(-222)
+        assert inp.get_attribute('value') == '-222'
+        inp.clear()
+        inp.send_keys(222)
+        assert inp.get_attribute('value') == '222'
+
+    def test_apps28_jqueryui_menu(self):
+        driver.get('https://the-internet.herokuapp.com/jqueryui/menu')
+        a = driver.find_element(By.XPATH, '//*[@id="ui-id-3"]/a')
+        b = driver.find_element(By.XPATH, '//*[@id="ui-id-4"]/a')
+        c = driver.find_element(By.XPATH, '//*[@id="ui-id-6"]/a')
+        ActionChains(driver).move_to_element(a).perform()
+        time.sleep(1)
+        ActionChains(driver).move_to_element(b).perform()
+        assert c.get_attribute('href') == 'https://the-internet.herokuapp.com/download/jqueryui/menu/menu.csv'
+
+    def test_app29_javascript_alerts(self):
+        driver.get('https://the-internet.herokuapp.com/javascript_alerts')
+        res = driver.find_element(By.XPATH, '//*[@id="result"]')
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/ul/li[1]/button').click()
+        alert = driver.switch_to.alert
+        alert.accept()
+        assert res.text == 'You successfully clicked an alert'
+
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/ul/li[2]/button').click()
+        alert = driver.switch_to.alert
+        alert.dismiss()
+        assert res.text == 'You clicked: Cancel'
+
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/ul/li[3]/button').click()
+        alert = driver.switch_to.alert
+        alert.send_keys('selenium')
+        alert.accept()
+        assert res.text == 'You entered: selenium'
+
+    # def test_app30_javascript_error(self):
+
+    def test_app31_key_presses(self):
+        driver.get('https://the-internet.herokuapp.com/key_presses')
+        inp = driver.find_element(By.ID, 'target')
+        res = driver.find_element(By.ID, 'result')
+        inp.send_keys('z')
+        assert res.text == 'You entered: Z'
+        inp.send_keys('7')
+        assert res.text == 'You entered: 7'
+        inp.send_keys(Keys.CONTROL)
+        assert res.text == 'You entered: CONTROL'
+
+    @pytest.mark.latest
+    def test_app32_large(self):
+        driver.get('https://the-internet.herokuapp.com/large')
+        latest = driver.find_element(By.ID, 'sibling-50.3')
+        assert latest.text == '50.3'
+        table_el = driver.find_element(By.XPATH,'//*[@id="large-table"]/tbody/tr[22]/td[8]')
+        assert table_el.text == '22.8'
 
         driver.close()
