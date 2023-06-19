@@ -1,12 +1,12 @@
 import os.path
 import time
 import re
+import requests
 
 import pytest
 from selenium import webdriver
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
-from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -14,9 +14,10 @@ from test_helpers import element_exists
 from test_helpers import img_checker
 from selenium.common import NoSuchElementException
 
-driver = webdriver.Firefox()
+driver = webdriver.Chrome()
 
 
+@pytest.mark.all
 class Test:
 
     def test_app1_abtest(self):
@@ -389,12 +390,99 @@ class Test:
         inp.send_keys(Keys.CONTROL)
         assert res.text == 'You entered: CONTROL'
 
-    @pytest.mark.latest
     def test_app32_large(self):
         driver.get('https://the-internet.herokuapp.com/large')
         latest = driver.find_element(By.ID, 'sibling-50.3')
         assert latest.text == '50.3'
-        table_el = driver.find_element(By.XPATH,'//*[@id="large-table"]/tbody/tr[22]/td[8]')
+        table_el = driver.find_element(By.XPATH, '//*[@id="large-table"]/tbody/tr[22]/td[8]')
         assert table_el.text == '22.8'
 
+    def test_app33_windows(self):
+        driver.get('https://the-internet.herokuapp.com/windows')
+        assert len(driver.window_handles) == 1
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/a').click()
+        time.sleep(1)
+        driver.switch_to.window(driver.window_handles[1])
+        res = driver.find_element(By.TAG_NAME, 'h3')
+        assert len(driver.window_handles) == 2
+        assert res.text == 'New Window'
         driver.close()
+
+    # def test_app34_nested_frames(self):
+
+    def test_app35_notification_message_rendered(self):
+        driver.get('https://the-internet.herokuapp.com/notification_message_rendered')
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/p/a').click()
+        notification = driver.find_element(By.ID, 'flash').text
+        assert notification == 'Action successful' or 'Action unsuccessful, please try again'
+
+    def test_app36_redirector(self):
+        driver.get('https://the-internet.herokuapp.com/redirector')
+        redirect = driver.find_element(By.XPATH, '//*[@id="redirect"]').get_attribute('href')
+        driver.find_element(By.XPATH, '//*[@id="redirect"]').click()
+        time.sleep(1)
+        assert str(redirect) != driver.current_url
+
+    # def test_app37_download_secure(self):
+
+    def test_app37_shadowdom(self):
+        driver.get('https://the-internet.herokuapp.com/shadowdom')
+        shadow_host = driver.find_element(By.XPATH, '//*[@id="content"]/my-paragraph[1]')
+        shadow_root = driver.execute_script('return arguments[0].shadowRoot', shadow_host)
+        shadow_content = shadow_root.find_element(By.NAME, 'my-text').text
+        assert shadow_content == "My default text"
+
+        shadow_host2 = driver.find_element(By.XPATH, '//*[@id="content"]/my-paragraph[2]')
+        shadow_root2 = driver.execute_script('return arguments[0].shadowRoot', shadow_host2)
+        shadow_content2 = shadow_root2.find_element(By.NAME, 'my-text').text
+        assert shadow_content2 == "My default text"
+
+    def test_app38_shifting_content_menu(self):
+        driver.get('https://the-internet.herokuapp.com/shifting_content/menu')
+        pos = driver.find_element(By.XPATH, '//*[@id="content"]/div/ul/li[5]/a').value_of_css_property('left')
+        assert pos == '0px'
+
+    def test_app39_shifting_content_image(self):
+        driver.get('https://the-internet.herokuapp.com/shifting_content/image')
+        pos = driver.find_element(By.XPATH, '//*[@id="content"]/div/img').value_of_css_property('left')
+        assert pos == '0px'
+
+    # def test_app39_shifting_content_list(self):
+
+    # def test_app40_slow(self):
+
+    def test_app41_tables(self):
+        driver.get('https://the-internet.herokuapp.com/tables')
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[1]/td[1]').text == 'Smith'
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[2]/td[1]').text == 'Bach'
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[3]/td[1]').text == 'Doe'
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[4]/td[1]').text == 'Conway'
+        driver.find_element(By.XPATH, '//*[@id="table1"]/thead/tr/th[1]/span').click()
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[1]/td[1]').text == 'Bach'
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[2]/td[1]').text == 'Conway'
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[3]/td[1]').text == 'Doe'
+        assert driver.find_element(By.XPATH, '//*[@id="table1"]/tbody/tr[4]/td[1]').text == 'Smith'
+
+        driver.get('https://the-internet.herokuapp.com/tables')
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[1]/td[1]').text == 'Smith'
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[2]/td[1]').text == 'Bach'
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[3]/td[1]').text == 'Doe'
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[4]/td[1]').text == 'Conway'
+        driver.find_element(By.XPATH, '//*[@id="table2"]/thead/tr/th[1]/span').click()
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[1]/td[1]').text == 'Bach'
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[2]/td[1]').text == 'Conway'
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[3]/td[1]').text == 'Doe'
+        assert driver.find_element(By.XPATH, '//*[@id="table2"]/tbody/tr[4]/td[1]').text == 'Smith'
+
+    def test_app42_status_codes(self):
+        assert requests.get('https://the-internet.herokuapp.com/status_codes/200').status_code == 200
+        assert requests.get('https://the-internet.herokuapp.com/status_codes/301').status_code == 301
+        assert requests.get('https://the-internet.herokuapp.com/status_codes/404').status_code == 404
+        assert requests.get('https://the-internet.herokuapp.com/status_codes/500').status_code == 500
+
+    @pytest.mark.latest
+    def test_app43_typos(self):
+        driver.get('https://the-internet.herokuapp.com/typos')
+        assert driver.find_element(By.XPATH,
+                                   '//*[@id="content"]/div/p[2]').text == "Sometimes you'll see a typo, other times you won't."
+        driver.quit()
