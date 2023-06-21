@@ -39,7 +39,6 @@ class Test:
 
         for k in range(5):
             driver.find_element(By.XPATH, f"//*[@id='elements']/button[1]").click()
-            # del_button.click()
 
         assert element_exists(del_button) == True
 
@@ -52,7 +51,6 @@ class Test:
     def test_app4_broken_images(self):
         driver.get("https://the-internet.herokuapp.com/broken_images")
         images = driver.find_elements(By.TAG_NAME, "img")
-
         assert img_checker(images) == 2
 
     def test_app5_challenging_dom(self):
@@ -85,21 +83,18 @@ class Test:
                                    '//*[@id="content"]/div/div/div/div[2]/table/tbody/tr[6]/td[6]').text == "Phaedrum5"
         assert driver.find_element(By.XPATH,
                                    '//*[@id="content"]/div/div/div/div[2]/table/tbody/tr[7]/td[7]').text == "edit delete"
-
         # button 1
         el1 = driver.find_element(By.XPATH, '//div[@class="large-2 columns"]/a[@class="button"]')
         button_id = el1.get_attribute("id")
         el1.click()
         el1 = driver.find_element(By.XPATH, '//div[@class="large-2 columns"]/a[@class="button"]')
         assert el1.get_attribute("id") != button_id
-
         # button 2
         el2 = driver.find_element(By.XPATH, '//div[@class="large-2 columns"]/a[@class="button alert"]')
         button_id = el2.get_attribute("id")
         el2.click()
         el2 = driver.find_element(By.XPATH, '//div[@class="large-2 columns"]/a[@class="button alert"]')
         assert el2.get_attribute("id") != button_id
-
         # button 3
         el3 = driver.find_element(By.XPATH, '//div[@class="large-2 columns"]/a[@class="button success"]')
         button_id = el3.get_attribute("id")
@@ -126,19 +121,21 @@ class Test:
         assert checkbox1.is_selected() == True
         assert checkbox2.is_selected() == False
 
-    # def test_app7_context_menu(self):
-    #     driver.get("https://the-internet.herokuapp.com/context_menu")
-    #     hotspot = driver.find_element(By.XPATH, '//*[@id="hot-spot"]')
-    #     ActionChains(driver).context_click(hotspot).perform()
-    #     alert = driver.switch_to.alert
-    #     assert alert.text == "You selected a context menu"
-    #     alert.accept()
+    @pytest.mark.skip
+    def test_app7_context_menu(self):
+        driver.get("https://the-internet.herokuapp.com/context_menu")
+        hotspot = driver.find_element(By.XPATH, '//*[@id="hot-spot"]')
+        ActionChains(driver).context_click(hotspot).perform()
+        alert = driver.switch_to.alert
+        assert alert.text == "You selected a context menu"
+        alert.accept()
 
-    # def test_app8_DigestAuthentication(self):
-    #     login = "admin"
-    #     driver.get(f"http://{login}:{login}@the-internet.herokuapp.com/digest_auth")
-    #     p = driver.find_element(By.TAG_NAME, "p")
-    #     assert p.text == "Congratulations! You must have the proper credentials."
+    @pytest.mark.skip
+    def test_app8_DigestAuthentication(self):
+        login = "admin"
+        driver.get(f"http://{login}:{login}@the-internet.herokuapp.com/digest_auth")
+        p = driver.find_element(By.TAG_NAME, "p")
+        assert p.text == "Congratulations! You must have the proper credentials."
 
     def test_app9_disappearing_elements(self):
         driver.get("https://the-internet.herokuapp.com/disappearing_elements")
@@ -152,21 +149,22 @@ class Test:
                 break
         assert driver.find_element(By.XPATH, '/html/body/h1').text == "Not Found"
 
-    # def test_app10_drag_and_drop(self):
-    #     driver.get("https://the-internet.herokuapp.com/drag_and_drop")
-    #     a = driver.find_element(By.ID, 'column-a')
-    #     b = driver.find_element(By.ID, 'column-b')
-    #     aCol = driver.find_element(By.XPATH, '//*[@id="column-a"]/header')
-    #     bCol = driver.find_element(By.XPATH, '//*[@id="column-b"]/header')
-    #
-    #     assert aCol.text == "A"
-    #     assert bCol.text == "B"
-    #
-    #     actions = ActionChains(driver)
-    #     actions.drag_and_drop(a,b).perform()
-    #
-    #     assert aCol.text == "B"
-    #     assert bCol.text == "A"
+    @pytest.mark.skip
+    def test_app10_drag_and_drop(self):
+        driver.get("https://the-internet.herokuapp.com/drag_and_drop")
+        a = driver.find_element(By.ID, 'column-a')
+        b = driver.find_element(By.ID, 'column-b')
+        aCol = driver.find_element(By.XPATH, '//*[@id="column-a"]/header')
+        bCol = driver.find_element(By.XPATH, '//*[@id="column-b"]/header')
+
+        assert aCol.text == "A"
+        assert bCol.text == "B"
+
+        actions = ActionChains(driver)
+        actions.drag_and_drop(a, b).perform()
+
+        assert aCol.text == "B"
+        assert bCol.text == "A"
 
     def test_app11_dropdown(self):
         driver.get("https://the-internet.herokuapp.com/dropdown")
