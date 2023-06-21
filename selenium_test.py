@@ -129,6 +129,8 @@ class Test:
         alert = driver.switch_to.alert
         assert alert.text == "You selected a context menu"
         alert.accept()
+        time.sleep(1)
+        driver.find_element(By.XPATH, '//*[@id="content"]/div/h3').click()
 
     @pytest.mark.skip
     def test_app8_DigestAuthentication(self):
@@ -160,8 +162,7 @@ class Test:
         assert aCol.text == "A"
         assert bCol.text == "B"
 
-        actions = ActionChains(driver)
-        actions.drag_and_drop(a, b).perform()
+        ActionChains(driver).drag_and_drop(a, b).perform()
 
         assert aCol.text == "B"
         assert bCol.text == "A"
@@ -240,7 +241,9 @@ class Test:
         time.sleep(1)
         driver.find_element(By.XPATH, '//*[@id="modal"]/div[2]/div[3]/p').click()
 
-    # def test_app16_exit_intent(self):
+    @pytest.mark.skip
+    def test_app16_exit_intent(self):
+        driver.get('https://the-internet.herokuapp.com/exit_intent')
 
     def test_app17_download(self):
         driver.get('https://the-internet.herokuapp.com/download')
@@ -335,7 +338,9 @@ class Test:
         time.sleep(1)
         assert driver.current_url == 'https://the-internet.herokuapp.com/users/3'
 
-    # def test_app26_infinite_scroll(self):
+    @pytest.mark.skip
+    def test_app26_infinite_scroll(self):
+        driver.get('https://the-internet.herokuapp.com/infinite_scroll')
 
     def test_apps27_inputs(self):
         driver.get('https://the-internet.herokuapp.com/inputs')
@@ -375,7 +380,9 @@ class Test:
         alert.accept()
         assert res.text == 'You entered: selenium'
 
-    # def test_app30_javascript_error(self):
+    @pytest.mark.skip
+    def test_app30_javascript_error(self):
+        driver.get('https://the-internet.herokuapp.com/javascript_error')
 
     def test_app31_key_presses(self):
         driver.get('https://the-internet.herokuapp.com/key_presses')
@@ -406,7 +413,9 @@ class Test:
         assert res.text == 'New Window'
         driver.close()
 
-    # def test_app34_nested_frames(self):
+    @pytest.mark.skip
+    def test_app34_nested_frames(self):
+        driver.get('https://the-internet.herokuapp.com/nested_frames')
 
     def test_app35_notification_message_rendered(self):
         driver.get('https://the-internet.herokuapp.com/notification_message_rendered')
@@ -421,7 +430,9 @@ class Test:
         time.sleep(1)
         assert str(redirect) != driver.current_url
 
-    # def test_app37_download_secure(self):
+    @pytest.mark.skip
+    def test_app37_download_secure(self):
+        driver.get('https://the-internet.herokuapp.com/download_secure')
 
     def test_app37_shadowdom(self):
         driver.get('https://the-internet.herokuapp.com/shadowdom')
@@ -445,9 +456,13 @@ class Test:
         pos = driver.find_element(By.XPATH, '//*[@id="content"]/div/img').value_of_css_property('left')
         assert pos == '0px'
 
-    # def test_app39_shifting_content_list(self):
+    @pytest.mark.skip
+    def test_app39_shifting_content_list(self):
+        driver.get('https://the-internet.herokuapp.com/shifting_content/list')
 
-    # def test_app40_slow(self):
+    @pytest.mark.skip
+    def test_app40_slow(self):
+        driver.get('https://the-internet.herokuapp.com/slow')
 
     def test_app41_tables(self):
         driver.get('https://the-internet.herokuapp.com/tables')
